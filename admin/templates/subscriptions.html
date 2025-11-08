@@ -1,4 +1,3 @@
-<!-- templates/subscriptions.html -->
 <!doctype html>
 <html>
 <head>
@@ -20,7 +19,7 @@
             <td>${s.topic_name}</td>
             <td>${s.subscribed_at}</td>
             <td>
-              <form method="post" action="/unsubscribe/${s.id}">
+              <form method="post" action="/unsubscribe/${s.id}" onsubmit="setTimeout(refreshSubscriptions, 500)">
                 <button type="submit">Unsubscribe</button>
               </form>
             </td>`;
