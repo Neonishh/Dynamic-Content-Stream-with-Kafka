@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Admin - Topic Management</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script>
+    // 🔁 Auto-refresh active topics counter every 5 seconds
+    async function refreshActiveTopics() {
+      try {
+        const resp = await fetch('/api/active_topics');
+        const active = await resp.json();
+        document.getElementById('active-count').innerText = active.length;
+      } catch (err) {
+        console.error("Failed to refresh active topics", err);
+      }
+    }
+    setInterval(refreshActiveTopics, 5000);
+    window.onload = refreshActiveTopics;
+  </script>
+  <style>
+    .status-pending { color: gray; font-weight: bold; }
+    .status-approved { color: blue; font-weight: bold; }
+    .status-active { color: green; font-weight: bold; }
+    .status-inactive { color: orange; font-weight: bold; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Admin: Topic Management</h1>
+
+    <!-- ✅ Add New Topic -->
+    <section class="card">
+      <h2>Add New Topic</h2>
+      <form action="/add_topic" method="post">
+        <input type="text" name="topic_name" placeholder="Enter topic name" required>
+        <button type="submit">Request Topic</button>
+      </form>
+    </section>
+
+    <!-- ✅ All Topics Table -->
+    <section class="card">
+      <h2>All Topics</h2>
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Topic Name</th><th>Status</th><th>Created</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          {% for t in topics %}
+          <tr>
+            <td>{{t.id}}</td>
+            <td>{{t.topic_name}}</td>
+            <td class="status-{{t.status}}">{{t.status}}</td>
+            <td>{{t.created_at}}</td>
+            <td>
+              {% if t.status == 'pending' %}
+                <form style="display:inline" method="post" action="/approve/{{t.id}}">
+                  <button type="submit">Approve</button>
+                </form>
+                <form style="display:inline" method="post" action="/reject/{{t.id}}">
+                  <button type="submit" style="background:#cc0000;">Reject</button>
+                </form>
+              {% elif t.status == 'approved' %}
+                <span>Waiting for Producer</span>
+              {% elif t.status == 'active' %}
+                <form style="display:inline" method="post" action="/deactivate/{{t.id}}">
+                  <button type="submit" style="background:#cc6600;">Deactivate</button>
+                </form>
+              {% elif t.status == 'inactive' %}
+                <form style="display:inline" method="post" action="/reactivate/{{t.id}}">
+                  <button type="submit" style="background:#2f855a;">Reactivate</button>
+                </form>
+                <form style="display:inline" method="post" action="/delete/{{t.id}}">
+                  <button type="submit" style="background:#990000;">Delete</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ✅ Active Topics Counter -->
+    <section class="card">
+      <h2>Active Topics (<span id="active-count">0</span>)</h2>
+      <p>Automatically updates every 5 seconds.</p>
+    </section>
+
+    <a href="/subscriptions">Manage Subscriptions →</a>
+  </div>
+</body>
+</html>

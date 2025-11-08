@@ -1,0 +1,61 @@
+<!-- templates/subscriptions.html -->
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Admin - Subscriptions</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script>
+    async function refreshSubscriptions() {
+      try {
+        const resp = await fetch('/api/subscriptions');
+        const data = await resp.json();
+        const tbody = document.getElementById('subs-body');
+        tbody.innerHTML = '';
+        data.forEach(s => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${s.id}</td>
+            <td>${s.user_name}</td>
+            <td>${s.topic_name}</td>
+            <td>${s.subscribed_at}</td>
+            <td>
+              <form method="post" action="/unsubscribe/${s.id}">
+                <button type="submit">Unsubscribe</button>
+              </form>
+            </td>`;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("Failed to refresh subscriptions", err);
+      }
+    }
+    setInterval(refreshSubscriptions, 5000);
+    window.onload = refreshSubscriptions;
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>Manage Subscriptions</h1>
+
+    <section class="card">
+      <h2>Subscribe a User to a Topic</h2>
+      <form action="/subscribe" method="post">
+        <input type="text" name="user_name" placeholder="User name" required>
+        <input type="text" name="topic_name" placeholder="Topic name" required>
+        <button type="submit">Subscribe</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Existing Subscriptions (auto-refreshing)</h2>
+      <table>
+        <thead><tr><th>ID</th><th>User</th><th>Topic</th><th>Subscribed At</th><th>Action</th></tr></thead>
+        <tbody id="subs-body"></tbody>
+      </table>
+    </section>
+
+    <a href="/">← Back to Topics</a>
+  </div>
+</body>
+</html>
